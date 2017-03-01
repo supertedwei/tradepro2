@@ -11,7 +11,6 @@ var firebase = require("firebase");
 
 var auth = require('./auth');
 var serviceapi = require('./serviceapi');
-var test = require('./test');
 var pushmysql = require('./pushmysql');
 var config = require('./config');
 
@@ -48,9 +47,6 @@ app.get('/listSettledPositionByRollover', serviceapi.listSettledPositionByRollov
 app.get('/getTradingDay', serviceapi.getTradingDay);
 app.get('/getAccountSummary', serviceapi.getAccountSummary);
 app.get('/listTradeQueue', serviceapi.listTradeQueue);
-
-app.get('/testPhpLogin', test.testPhpLogin);
-app.get('/testMD5', test.testMD5);
 
 app.post('/tradeWithCheck', serviceapi.tradeWithCheck);
 app.post('/trade', serviceapi.trade);
