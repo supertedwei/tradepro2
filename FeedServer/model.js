@@ -1,5 +1,11 @@
-var DB = require('./db').DB;
-var realtimeDB = require('./db').realtimeDB;
+var Bookshelf = require('bookshelf');
+var config = require('./config');
+
+var knex = require('knex')({
+  client: 'mysql',
+  connection: config.masterDb
+});
+var DB = Bookshelf(knex);
 
 var User = DB.Model.extend({
    tableName: 'user',
@@ -107,9 +113,34 @@ var Config = DB.Model.extend({
    idAttribute: 'configid',
 });
 
-var RealtimeQuote = realtimeDB.Model.extend({
-   tableName: 'quote',
-   idAttribute: 'symbol',
+///////////////////////////
+
+var realtimeKnex = {};
+var realtimeDB = {};
+var RealtimeQuote = {};
+
+knex('config').where({
+  configid: 35
+}).select('value').then(function (response) {
+  host = response[0].value;
+  console.log("configid 35 : " +  host);
+  config.realtimeDb.host = host;
+  realtimeKnex = require('knex')({
+    client: 'mysql',
+    connection: config.realtimeDb
+  });
+
+  realtimeDB = Bookshelf(realtimeKnex);
+
+  RealtimeQuote = realtimeDB.Model.extend({
+    tableName: 'quote',
+    idAttribute: 'symbol',
+  });
+
+  module.exports.RealtimeQuote = RealtimeQuote;
+
+}).catch(error => {
+  console.log("error : " + JSON.stringify(error));
 });
 
 module.exports = {
@@ -128,5 +159,4 @@ module.exports = {
    TradeQueue: TradeQueue,
    Notification: Notification,
    Config: Config,
-   RealtimeQuote: RealtimeQuote,
 };
