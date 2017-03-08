@@ -51,6 +51,7 @@ var onQuoteOrCounterChange = function(counter, quote) {
     high = high.toFixed(counter.decimals);
     high = parseFloat(high);
     if (!isNaN(high)) {
+      counterQuoteData['lastHigh'] = counterQuote.high;
       counterQuoteData['high'] = high;
     }
 
@@ -59,6 +60,7 @@ var onQuoteOrCounterChange = function(counter, quote) {
     low = low.toFixed(counter.decimals);
     low = parseFloat(low);
     if (!isNaN(low)) {
+      counterQuoteData['lastLow'] = counterQuote.low;
       counterQuoteData['low'] = low;
     }
 
