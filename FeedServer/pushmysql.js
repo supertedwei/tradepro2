@@ -64,6 +64,9 @@ var onQuoteOrCounterChange = function(counter, quote) {
       counterQuoteData['low'] = low;
     }
 
+    // set change since open
+    counterQuoteData['quoteChange'] = quote.change;
+
     // set change
     counterQuoteData['change'] = 0;
     if (counterQuoteData['lastbid'] != null) {
