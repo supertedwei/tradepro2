@@ -65,6 +65,7 @@ var onQuoteOrCounterChange = function(counter, quote) {
     }
 
     // set change since open
+    counterQuoteData['lastQuoteChange'] = counterQuote.quoteChange;
     counterQuoteData['quoteChange'] = quote.change;
 
     // set change
