@@ -65,8 +65,14 @@ var onQuoteOrCounterChange = function(counter, quote) {
     }
 
     // set change since open
-    counterQuoteData['quoteChange'] = parseFloat(quote.change);
-
+    var quoteChange = parseFloat(quote.change);
+    if (isNaN(quoteChange)) {
+      console.log("quoteChange is Nan : " + quote.change);
+      counterQuoteData['quoteChange'] = counterQuote.quoteChang;
+    } else {
+      counterQuoteData['quoteChange'] = quoteChange;
+    }
+    
     // set change
     counterQuoteData['change'] = 0;
     if (counterQuoteData['lastbid'] != null) {
