@@ -178,22 +178,59 @@ var syncCounter = function() {
   });
 }
 
+var counterSetValueCache = {};
+var cacheCounterSetValue = function() {
+  console.log("cacheCounterSetValue : " + new Date());
+  Model.CounterSetValue
+      .fetchAll({columns: ['countersetid', 'exchangeid', 'lotsize']})
+      .then(function(dbCounterSetValues) {
+    var jsonCounterSetValues = dbCounterSetValues.toJSON();
+    // console.log("jsonCounterSetValues : " + jsonCounterSetValues);
+    tempCache = {};
+    for (var counterSetValue of jsonCounterSetValues) {
+      var item = tempCache[counterSetValue.exchangeid];
+      if (item == null) {
+        item = [];
+      }
+      item.push(counterSetValue);
+      tempCache[counterSetValue.exchangeid] = item;
+    //   //console.log("countersetid    : " + counterSetValue.countersetid);
+    //   var bundle = Object.assign(counter, counterSetValue);
+    //   var ref = countersetRef.child(counterSetValue.countersetid);
+    //   ref.set(bundle);
+    }
+    counterSetValueCache = tempCache;
+    // console.log("counterSetValueCache : " + JSON.stringify(counterSetValueCache));
+  });
+}
+
 var syncCounterSetValue = function(counter) {
   //console.log("exchangeid    : " + counter.exchangeid);
 
   var countersetRef = firebase.database().ref("counterset/" + encode(counter.symbol));
-  Model.CounterSetValue.where('exchangeid', counter.exchangeid)
-      .fetchAll({columns: ['countersetid', 'exchangeid', 'lotsize']})
-      .then(function(dbCounterSetValues) {
 
-    var jsonCounterSetValues = dbCounterSetValues.toJSON();
+  jsonCounterSetValues = counterSetValueCache[counter.exchangeid];
+  // console.log("jsonCounterSetValues : " + jsonCounterSetValues);
+  if (jsonCounterSetValues != null) {
     for (var counterSetValue of jsonCounterSetValues) {
       //console.log("countersetid    : " + counterSetValue.countersetid);
       var bundle = Object.assign(counter, counterSetValue);
       var ref = countersetRef.child(counterSetValue.countersetid);
       ref.set(bundle);
     }
-  });
+  }
+  // Model.CounterSetValue.where('exchangeid', counter.exchangeid)
+  //     .fetchAll({columns: ['countersetid', 'exchangeid', 'lotsize']})
+  //     .then(function(dbCounterSetValues) {
+
+  //   var jsonCounterSetValues = dbCounterSetValues.toJSON();
+  //   for (var counterSetValue of jsonCounterSetValues) {
+  //     //console.log("countersetid    : " + counterSetValue.countersetid);
+  //     var bundle = Object.assign(counter, counterSetValue);
+  //     var ref = countersetRef.child(counterSetValue.countersetid);
+  //     ref.set(bundle);
+  //   }
+  // });
 }
 
 var syncNotification = function() {
@@ -225,4 +262,5 @@ var syncNotification = function() {
 module.exports = {
    syncCounter: syncCounter,
    syncNotification: syncNotification,
+   cacheCounterSetValue: cacheCounterSetValue,
 };

@@ -18,6 +18,7 @@ firebase.initializeApp(config.firebase.options);
 
 schedule.scheduleJob('*/3 * * * * *', pushmysql.syncCounter);
 schedule.scheduleJob('*/3 * * * * *', pushmysql.syncNotification);
+schedule.scheduleJob('*/5 * * * * *', pushmysql.cacheCounterSetValue);
 
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
