@@ -66,8 +66,8 @@ var onQuoteOrCounterChange = function(counter, quote) {
 
     // set change since open
     var quoteChange = parseFloat(quote.change);
-    if (isNaN(quoteChange)) {
-      console.log("quoteChange is Nan : " + quote.change);
+    if (isNaN(quoteChange) || quoteChange == null) {
+      console.log("quoteChange is NaN or null : " + quote.change);
       counterQuoteData['quoteChange'] = counterQuote.quoteChang;
     } else {
       counterQuoteData['quoteChange'] = quoteChange;
@@ -83,7 +83,11 @@ var onQuoteOrCounterChange = function(counter, quote) {
         counterQuoteData['change'] = change;
       }
     }
-    counterQuoteRef.update(counterQuoteData);
+    counterQuoteRef.update(counterQuoteData)
+      .catch(function(error) {
+        console.error("counterQuoteRef.update fail : " + error);
+      }
+    );
   });
 }
 
