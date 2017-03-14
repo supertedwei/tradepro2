@@ -68,7 +68,7 @@ var onQuoteOrCounterChange = function(counter, quote) {
     var quoteChange = parseFloat(quote.change);
     if (isNaN(quoteChange) || quoteChange == null) {
       console.log("quoteChange is NaN or null : " + quote.change);
-      counterQuoteData['quoteChange'] = counterQuote.quoteChang;
+      counterQuoteData['quoteChange'] = counterQuote.quoteChange;
     } else {
       counterQuoteData['quoteChange'] = quoteChange;
     }
