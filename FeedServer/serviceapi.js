@@ -459,7 +459,10 @@ var trade = function(req, res) {
     new Model.TradeQueue(tradeDate).save().then(function(model) {
       console.log("model :" + JSON.stringify());
       res.json(model);
-    });
+    }).catch(function(e) {
+      console.log("here(463) :");
+      console.log(e); // "oh, no!"
+    });;
     
   });
   
@@ -546,6 +549,7 @@ var cancelTrade = function(req, res) {
     res.json(model);
   })
   .catch(function(e) {
+    console.log("here(549) :");
     console.log(e); // "oh, no!"
     res.end();
   });
@@ -570,7 +574,7 @@ var setNotificationClient = function(req, res) {
       notificationRef.remove();
     })
     .catch(function(e) {
-      console.log("here :");
+      console.log("here(573) :");
       console.log(e); // "oh, no!"
     });
   res.end();
