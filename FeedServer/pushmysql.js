@@ -145,7 +145,9 @@ var syncCounter = function() {
         counter.exchange = {open: counter.exchange.open};
         counter.active = null;
         var itemCounterRef = counterRef.child(counter.symbol);
-        itemCounterRef.set(counter);
+        itemCounterRef.set(counter).catch(function(error) {
+          console.error("itemCounterRef.update fail (149) : " + error);
+        });
         if (fbCounters != null) {
           delete fbCounters[counter.symbol];
         }
@@ -153,7 +155,9 @@ var syncCounter = function() {
         // set counterquote
         var encodedConterid = Buffer.from(counter.counterid).toString('base64');
         var itemCounterQuoteRef = counterQuoteRef.child(encodedConterid);
-        itemCounterQuoteRef.update(counter);
+        itemCounterQuoteRef.update(counter).catch(function(error) {
+          console.error("itemCounterQuoteRef.update fail (159) : " + error);
+        });
         
         // register for quote update
         var quoteChildRef = quoteRef.child(counter.symbol);
@@ -198,10 +202,6 @@ var cacheCounterSetValue = function() {
       }
       item.push(counterSetValue);
       tempCache[counterSetValue.exchangeid] = item;
-    //   //console.log("countersetid    : " + counterSetValue.countersetid);
-    //   var bundle = Object.assign(counter, counterSetValue);
-    //   var ref = countersetRef.child(counterSetValue.countersetid);
-    //   ref.set(bundle);
     }
     counterSetValueCache = tempCache;
     // console.log("counterSetValueCache : " + JSON.stringify(counterSetValueCache));
@@ -220,21 +220,11 @@ var syncCounterSetValue = function(counter) {
       //console.log("countersetid    : " + counterSetValue.countersetid);
       var bundle = Object.assign(counter, counterSetValue);
       var ref = countersetRef.child(counterSetValue.countersetid);
-      ref.set(bundle);
+      ref.set(bundle).catch(function(error) {
+        console.error("countersetRef.update fail (226) : " + error + "/" + ref);
+      });
     }
   }
-  // Model.CounterSetValue.where('exchangeid', counter.exchangeid)
-  //     .fetchAll({columns: ['countersetid', 'exchangeid', 'lotsize']})
-  //     .then(function(dbCounterSetValues) {
-
-  //   var jsonCounterSetValues = dbCounterSetValues.toJSON();
-  //   for (var counterSetValue of jsonCounterSetValues) {
-  //     //console.log("countersetid    : " + counterSetValue.countersetid);
-  //     var bundle = Object.assign(counter, counterSetValue);
-  //     var ref = countersetRef.child(counterSetValue.countersetid);
-  //     ref.set(bundle);
-  //   }
-  // });
 }
 
 var syncNotification = function() {
@@ -256,7 +246,9 @@ var syncNotification = function() {
           outNotification.noticeid = notification.noticeid;
           outNotification.orderid = notification.tradequeue.orderid;
           outNotification.statusname = notification.tradequeue.status.statusname;
-          notificationRef.set(outNotification);
+          notificationRef.set(outNotification).catch(function(error) {
+            console.error("notificationRef.update fail (248) : " + error);
+          });
         }
       }
     );
