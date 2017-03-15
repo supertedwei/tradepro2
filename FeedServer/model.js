@@ -4,7 +4,7 @@ var config = require('./config');
 var knex = require('knex')({
   client: 'mysql',
   connection: config.masterDb,
-  pool: { min: 0, max: 7 }
+  pool: { min: 0, max: 20 }
 });
 var DB = Bookshelf(knex);
 
@@ -129,7 +129,7 @@ knex('config').where({
   realtimeKnex = require('knex')({
     client: 'mysql',
     connection: config.realtimeDb,
-    pool: { min: 0, max: 7 }
+    pool: { min: 0, max: 20 }
   });
 
   realtimeDB = Bookshelf(realtimeKnex);
