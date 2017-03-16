@@ -122,16 +122,18 @@ var onQuoteChange = function(quoteSnapshot) {
 
 var syncCounter = function() {
   setTimeout(function() {
+    console.log("syncCounter : " + new Date());
     internalSyncCounter().then(function() {
+      console.log("syncCounter (end : 127) : " + new Date());
       syncCounter();
     }).catch(function() {
+      console.log("syncCounter (end : 130) : " + new Date());
       syncCounter();
     });
   }, 3000);
 }
 
 var internalSyncCounter = function() {
-  console.log("syncCounter : " + new Date());
   return new Promise(function(resolve, reject){
     Model.Counter.where('active', 1).fetchAll(serviceapi.QUERY_COUNTER).then(function(dbCounters) {
       //console.log("dbCounters : " + JSON.stringify(dbCounters));
@@ -231,18 +233,20 @@ var syncCounterSetValue = function(counter) {
 
 var syncNotification = function() {
   setTimeout(function() {
+    console.log("syncNotification : " + new Date());
     internalSyncNotification().then(function() {
+      console.log("syncNotification (end : 236) : " + new Date());
       syncNotification();
     }).catch(function() {
+      console.log("syncNotification (end : 239) : " + new Date());
       syncNotification();
     });
   }, 3000);
 }
 
 var internalSyncNotification = function() {
-  console.log("syncNotification : " + new Date());
   return new Promise(function(resolve, reject){
-     console.log("syncNotification (216)");
+    // console.log("syncNotification (216)");
     Model.TradingDay.where('active', 1).fetch({columns: ['rollover']}).then(function(tradingDay) {
       var rollover = tradingDay.get("rollover");
       Model.Notification
