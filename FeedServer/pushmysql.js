@@ -201,29 +201,47 @@ var syncCounterSetValue = function(counter) {
 }
 
 var syncNotification = function() {
-  Model.TradingDay.where('active', 1).fetch({columns: ['rollover']}).then(function(tradingDay) {
-    var rollover = tradingDay.get("rollover");
-    Model.Notification
-      .query(function(qb) {
-        qb.where({client: null, rollover: rollover, noticetype: "order"})
-      })
-      .fetchAll({
-        withRelated: ['tradequeue', 'tradequeue.status'],
-      })
-      .then(function(notificationList) {
-        var jsonNotificationList = notificationList.toJSON();
-        //console.log("jsonNotificationList : " + JSON.stringify(jsonNotificationList));
-        for (var notification of jsonNotificationList) {
-          var notificationRef = firebase.database().ref("notification/" + notification.userid + "/" + notification.noticeid);
-          var outNotification = {};
-          outNotification.noticeid = notification.noticeid;
-          outNotification.orderid = notification.tradequeue.orderid;
-          outNotification.statusname = notification.tradequeue.status.statusname;
-          notificationRef.set(outNotification);
-        }
-      }
-    );
+  setTimeout(function() {
+    internalSyncNotification().then(function() {
+      syncNotification();
+    }).catch(function() {
+      syncNotification();
+    });
+  }, 3000);
+}
+
+var internalSyncNotification = function() {
+  console.log("syncNotification : " + new Date());
+  return new Promise(function(resolve, reject){
+     console.log("syncNotification (216)");
+    Model.TradingDay.where('active', 1).fetch({columns: ['rollover']}).then(function(tradingDay) {
+      var rollover = tradingDay.get("rollover");
+      Model.Notification
+        .query(function(qb) {
+          qb.where({client: null, rollover: rollover, noticetype: "order"})
+        })
+        .fetchAll({
+          withRelated: ['tradequeue', 'tradequeue.status'],
+        })
+        .then(function(notificationList) {
+          var jsonNotificationList = notificationList.toJSON();
+          console.log("jsonNotificationList : " + JSON.stringify(jsonNotificationList));
+          for (var notification of jsonNotificationList) {
+            var notificationRef = firebase.database().ref("notification/" + notification.userid + "/" + notification.noticeid);
+            var outNotification = {};
+            outNotification.noticeid = notification.noticeid;
+            outNotification.orderid = notification.tradequeue.orderid;
+            outNotification.statusname = notification.tradequeue.status.statusname;
+            notificationRef.set(outNotification);
+          }
+          resolve(jsonNotificationList);
+        })
+        .catch(function(error) {
+          reject(error);
+        });
+    });
   });
+
 }
 
 module.exports = {
