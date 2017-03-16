@@ -121,83 +121,112 @@ var onQuoteChange = function(quoteSnapshot) {
 }
 
 var syncCounter = function() {
+  setTimeout(function() {
+    internalSyncCounter().then(function() {
+      syncCounter();
+    }).catch(function() {
+      syncCounter();
+    });
+  }, 3000);
+}
+
+var internalSyncCounter = function() {
   console.log("syncCounter : " + new Date());
-  Model.Counter.where('active', 1).fetchAll(serviceapi.QUERY_COUNTER).then(function(dbCounters) {
-    //console.log("dbCounters : " + JSON.stringify(dbCounters));
-    var counterRef = firebase.database().ref("counter");
-    var quoteRef = firebase.database().ref("quote");
-    var counterQuoteRef = firebase.database().ref("counterquote");
-    
-    counterRef.once('value', function(snapshot) {
-      var fbCounters = snapshot.val();
+  return new Promise(function(resolve, reject){
+    Model.Counter.where('active', 1).fetchAll(serviceapi.QUERY_COUNTER).then(function(dbCounters) {
+      //console.log("dbCounters : " + JSON.stringify(dbCounters));
+      var counterRef = firebase.database().ref("counter");
+      var quoteRef = firebase.database().ref("quote");
+      var counterQuoteRef = firebase.database().ref("counterquote");
       
-      var jsonCounters = dbCounters.toJSON();
-      for (var counter of jsonCounters) {
-        // set basecounter
-        if (counter.basecounterObject != null && counter.basecounterObject.symbol != null) {
-          counter.basecounterSymbol = counter.basecounterObject.symbol;
-          counter.basecounterid = counter.basecounterObject.counterid;
-        }
-        counter.basecounterObject = null;
+      counterRef.once('value', function(snapshot) {
+        var fbCounters = snapshot.val();
         
-        // set counter
-        counter.symbol = encode(counter.symbol);
-        counter.exchange = {open: counter.exchange.open};
-        counter.active = null;
-        var itemCounterRef = counterRef.child(counter.symbol);
-        itemCounterRef.set(counter);
-        if (fbCounters != null) {
-          delete fbCounters[counter.symbol];
+        var jsonCounters = dbCounters.toJSON();
+        var allPromises = [];
+        for (var counter of jsonCounters) {
+          // set basecounter
+          if (counter.basecounterObject != null && counter.basecounterObject.symbol != null) {
+            counter.basecounterSymbol = counter.basecounterObject.symbol;
+            counter.basecounterid = counter.basecounterObject.counterid;
+          }
+          counter.basecounterObject = null;
+          
+          // set counter
+          counter.symbol = encode(counter.symbol);
+          counter.exchange = {open: counter.exchange.open};
+          counter.active = null;
+          var itemCounterRef = counterRef.child(counter.symbol);
+          itemCounterRef.set(counter);
+          if (fbCounters != null) {
+            delete fbCounters[counter.symbol];
+          }
+
+          // set counterquote
+          var encodedConterid = Buffer.from(counter.counterid).toString('base64');
+          var itemCounterQuoteRef = counterQuoteRef.child(encodedConterid);
+          itemCounterQuoteRef.update(counter);
+          
+          // register for quote update
+          var quoteChildRef = quoteRef.child(counter.symbol);
+          if (onQuoteChangeMap[counter.symbol] == null) {
+            onQuoteChangeMap[counter.symbol] = true;
+            quoteChildRef.on('value', onQuoteChange);
+            console.log("registered onQuoteChange : " + counter.symbol);
+          }
+
+          onCounterChange(counter);
+          var syncCounterSetValuePrmoise = syncCounterSetValue(counter);
+          allPromises.push(syncCounterSetValuePrmoise);
         }
 
-        // set counterquote
-        var encodedConterid = Buffer.from(counter.counterid).toString('base64');
-        var itemCounterQuoteRef = counterQuoteRef.child(encodedConterid);
-        itemCounterQuoteRef.update(counter);
-        
-        // register for quote update
-        var quoteChildRef = quoteRef.child(counter.symbol);
-        if (onQuoteChangeMap[counter.symbol] == null) {
-          onQuoteChangeMap[counter.symbol] = true;
-          quoteChildRef.on('value', onQuoteChange);
-          console.log("registered onQuoteChange : " + counter.symbol);
+        // delete residual counter
+        for (var name in fbCounters) {
+          console.log("name : " + name);
+          counterRef.child(name).remove();
+
+          // unregister for quote update
+          var quoteChildRef = quoteRef.child(name);
+          onQuoteChangeMap[name] = true;
+          quoteChildRef.off('value', onQuoteChange);
+          console.log("unregistered onQuoteChange : " + name);
         }
 
-        onCounterChange(counter);
-        syncCounterSetValue(counter);
-      }
-
-      // delete residual counter
-      for (var name in fbCounters) {
-        console.log("name : " + name);
-        counterRef.child(name).remove();
-
-        // unregister for quote update
-        var quoteChildRef = quoteRef.child(name);
-        onQuoteChangeMap[name] = true;
-        quoteChildRef.off('value', onQuoteChange);
-        console.log("unregistered onQuoteChange : " + name);
-      }
+        if (allPromises.length > 0) {
+          Promise.all(allPromises).then(() => {
+            resolve();
+          })
+          .catch((error) => {
+            console.error("allPromises fail (200) : " + error);
+            resolve();
+          });
+        }
+      });
     });
   });
 }
 
 var syncCounterSetValue = function(counter) {
   //console.log("exchangeid    : " + counter.exchangeid);
-
-  var countersetRef = firebase.database().ref("counterset/" + encode(counter.symbol));
-  Model.CounterSetValue.where('exchangeid', counter.exchangeid)
-      .fetchAll({columns: ['countersetid', 'exchangeid', 'lotsize']})
-      .then(function(dbCounterSetValues) {
-
-    var jsonCounterSetValues = dbCounterSetValues.toJSON();
-    for (var counterSetValue of jsonCounterSetValues) {
-      //console.log("countersetid    : " + counterSetValue.countersetid);
-      var bundle = Object.assign(counter, counterSetValue);
-      var ref = countersetRef.child(counterSetValue.countersetid);
-      ref.set(bundle);
-    }
-  });
+  return new Promise((resolve, reject) => {
+    var countersetRef = firebase.database().ref("counterset/" + encode(counter.symbol));
+    Model.CounterSetValue.where('exchangeid', counter.exchangeid)
+        .fetchAll({columns: ['countersetid', 'exchangeid', 'lotsize']})
+    .then(function(dbCounterSetValues) {
+      var jsonCounterSetValues = dbCounterSetValues.toJSON();
+      for (var counterSetValue of jsonCounterSetValues) {
+        //console.log("countersetid    : " + counterSetValue.countersetid);
+        var bundle = Object.assign(counter, counterSetValue);
+        var ref = countersetRef.child(counterSetValue.countersetid);
+        ref.set(bundle);
+      }
+      resolve();
+    })
+    .catch((error) => {
+      console.error("syncCounterSetValue fail (202) : " + error);
+      resolve();
+    });
+  }); 
 }
 
 var syncNotification = function() {

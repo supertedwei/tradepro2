@@ -16,8 +16,9 @@ var config = require('./config');
 
 firebase.initializeApp(config.firebase.options);
 
-schedule.scheduleJob('*/3 * * * * *', pushmysql.syncCounter);
+//schedule.scheduleJob('*/3 * * * * *', pushmysql.syncCounter);
 //schedule.scheduleJob('*/3 * * * * *', pushmysql.syncNotification);
+pushmysql.syncCounter();
 pushmysql.syncNotification();
 
 app.use(bodyParser.json()); // for parsing application/json
