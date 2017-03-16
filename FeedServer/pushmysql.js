@@ -122,12 +122,12 @@ var onQuoteChange = function(quoteSnapshot) {
 
 var syncCounter = function() {
   setTimeout(function() {
-    console.log("syncCounter : " + new Date());
+    console.log("syncCounter : " + new Date().toISOString());
     internalSyncCounter().then(function() {
-      console.log("syncCounter (end : 127) : " + new Date());
+      console.log("syncCounter (end : 127) : " + new Date().toISOString());
       syncCounter();
     }).catch(function() {
-      console.log("syncCounter (end : 130) : " + new Date());
+      console.log("syncCounter (end : 130) : " + new Date().toISOString());
       syncCounter();
     });
   }, 3000);
@@ -233,12 +233,12 @@ var syncCounterSetValue = function(counter) {
 
 var syncNotification = function() {
   setTimeout(function() {
-    console.log("syncNotification : " + new Date());
+    console.log("syncNotification : " + new Date().toISOString());
     internalSyncNotification().then(function() {
-      console.log("syncNotification (end : 236) : " + new Date());
+      console.log("syncNotification (end : 236) : " + new Date().toISOString());
       syncNotification();
     }).catch(function() {
-      console.log("syncNotification (end : 239) : " + new Date());
+      console.log("syncNotification (end : 239) : " + new Date().toISOString());
       syncNotification();
     });
   }, 3000);
