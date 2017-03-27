@@ -258,7 +258,7 @@ var internalSyncNotification = function() {
         })
         .then(function(notificationList) {
           var jsonNotificationList = notificationList.toJSON();
-          console.log("jsonNotificationList : " + JSON.stringify(jsonNotificationList));
+          // console.log("jsonNotificationList : " + JSON.stringify(jsonNotificationList));
           for (var notification of jsonNotificationList) {
             var notificationRef = firebase.database().ref("notification/" + notification.userid + "/" + notification.noticeid);
             var outNotification = {};
