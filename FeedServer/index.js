@@ -15,6 +15,10 @@ var serviceapi = require('./serviceapi');
 var pushmysql = require('./pushmysql');
 var config = require('./config');
 
+process.on('uncaughtException', function (err) {
+  console.error(err.stack);
+});
+
 firebase.initializeApp(config.firebase.options);
 
 //schedule.scheduleJob('*/3 * * * * *', pushmysql.syncCounter);
