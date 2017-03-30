@@ -85,7 +85,7 @@ var onQuoteOrCounterChange = function(counter, quote) {
     }
     counterQuoteRef.update(counterQuoteData)
       .catch(function(error) {
-        console.error("counterQuoteRef.update fail : " + error);
+        console.error("counterQuoteRef.update fail (88): " + error);
       }
     );
   });
@@ -167,7 +167,10 @@ var internalSyncCounter = function() {
           // set counterquote
           var encodedConterid = Buffer.from(counter.counterid).toString('base64');
           var itemCounterQuoteRef = counterQuoteRef.child(encodedConterid);
-          itemCounterQuoteRef.update(counter);
+          itemCounterQuoteRef.update(counter)
+            .catch(function(error) {
+              console.error("itemCounterQuoteRef.update fail (172): " + error);
+            })
           
           // register for quote update
           var quoteChildRef = quoteRef.child(counter.symbol);
@@ -204,6 +207,9 @@ var internalSyncCounter = function() {
           });
         }
       });
+    }).catch((error) => {
+      console.error("MySQL fail (208) : " + error);
+      resolve();
     });
   });
 }
@@ -270,8 +276,12 @@ var internalSyncNotification = function() {
           resolve(jsonNotificationList);
         })
         .catch(function(error) {
+          console.error("MySQL fail (276) : " + error);
           reject(error);
         });
+    }).catch((error) => {
+      console.error("MySQL fail (279) : " + error);
+      resolve();
     });
   });
 
