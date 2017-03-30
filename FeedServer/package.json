@@ -17,6 +17,7 @@
     "express-session": "^1.14.1",
     "firebase": "^3.4.1",
     "knex": "^0.12.9",
+    "log-timestamp": "^0.1.2",
     "multer": "^1.2.0",
     "mysql": "^2.13.0",
     "node-schedule": "^1.1.1",
