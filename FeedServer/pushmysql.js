@@ -159,7 +159,10 @@ var internalSyncCounter = function() {
           counter.exchange = {open: counter.exchange.open};
           counter.active = null;
           var itemCounterRef = counterRef.child(counter.symbol);
-          itemCounterRef.set(counter);
+          itemCounterRef.set(counter)
+            .catch(function(error) {
+              console.error("itemCounterRef.set fail (164): " + error);
+            })
           if (fbCounters != null) {
             delete fbCounters[counter.symbol];
           }
@@ -226,7 +229,10 @@ var syncCounterSetValue = function(counter) {
         //console.log("countersetid    : " + counterSetValue.countersetid);
         var bundle = Object.assign(counter, counterSetValue);
         var ref = countersetRef.child(counterSetValue.countersetid);
-        ref.set(bundle);
+        ref.set(bundle)
+          .catch(function(error) {
+            console.error("ref.set fail (234): " + error);
+          })
       }
       resolve();
     })
@@ -271,7 +277,10 @@ var internalSyncNotification = function() {
             outNotification.noticeid = notification.noticeid;
             outNotification.orderid = notification.tradequeue.orderid;
             outNotification.statusname = notification.tradequeue.status.statusname;
-            notificationRef.set(outNotification);
+            notificationRef.set(outNotification)
+              .catch(function(error) {
+                console.error("notificationRef.set fail (282): " + error);
+              })
           }
           resolve(jsonNotificationList);
         })
