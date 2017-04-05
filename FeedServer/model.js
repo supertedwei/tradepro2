@@ -4,7 +4,11 @@ var config = require('./config');
 var knex = require('knex')({
   client: 'mysql',
   connection: config.masterDb,
-  pool: { min: 0, max: 20 }
+  pool: { 
+      min: 0, 
+      max: 20,
+      ping: function (conn, cb) { conn.query('SELECT 1', cb); }
+  }
 });
 var DB = Bookshelf(knex);
 
