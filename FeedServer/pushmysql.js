@@ -116,6 +116,10 @@ var onQuoteChange = function(quoteSnapshot) {
   var counterRef = firebase.database().ref("counter").child(encodedSymbol);
   counterRef.once('value', function(counterSnapshot) {
     var counter = counterSnapshot.val();
+    if (counter == null) {
+      console.log("counter is null (120) - " + quote.symbol);
+      return;
+    }
     onQuoteOrCounterChange(counter, quote);
   });
 }
