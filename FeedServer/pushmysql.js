@@ -221,16 +221,26 @@ var internalSyncCounter = function() {
   });
 }
 
+var counterSetValueCache = {};
 var syncCounterSetValue = function(counter) {
   //console.log("exchangeid    : " + counter.exchangeid);
   return new Promise((resolve, reject) => {
-    var countersetRef = firebase.database().ref("counterset/" + encode(counter.symbol));
+    // check cache
+    var jsonCounterSetValues = counterSetValueCache[counter.exchangeid];
+    if (jsonCounterSetValues != null) {
+      setCountersetRef(jsonCounterSetValues);
+      resolve();
+      return;
+    }
+
     Model.CounterSetValue.where('exchangeid', counter.exchangeid)
         .fetchAll({columns: ['countersetid', 'exchangeid', 'lotsize']})
     .then(function(dbCounterSetValues) {
       var jsonCounterSetValues = dbCounterSetValues.toJSON();
+      // put to cache
+      counterSetValueCache[counterSetValue.exchangeid] = jsonCounterSetValues;
       for (var counterSetValue of jsonCounterSetValues) {
-        //console.log("countersetid    : " + counterSetValue.countersetid);
+        console.log("countersetid    : " + counterSetValue.countersetid);
         var bundle = Object.assign(counter, counterSetValue);
         var ref = countersetRef.child(counterSetValue.countersetid);
         ref.set(bundle)
@@ -245,6 +255,23 @@ var syncCounterSetValue = function(counter) {
       resolve();
     });
   }); 
+}
+
+var setCountersetRef = function(jsonCounterSetValues) {
+    if (jsonCounterSetValues == null) {
+      console.warn("setCountersetRef (253)");
+      return;
+    }
+    var countersetRef = firebase.database().ref("counterset/" + encode(counter.symbol));
+    for (var counterSetValue of jsonCounterSetValues) {
+      //console.log("countersetid    : " + counterSetValue.countersetid);
+      var bundle = Object.assign(counter, counterSetValue);
+      var ref = countersetRef.child(counterSetValue.countersetid);
+      ref.set(bundle)
+        .catch(function(error) {
+          console.error("ref.set fail (234): " + error);
+        })
+    }
 }
 
 var syncNotification = function() {
