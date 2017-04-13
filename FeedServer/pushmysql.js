@@ -50,8 +50,10 @@ var onQuoteOrCounterChange = function(counter, quote) {
     var high = parseFloat(quote.high) + counter.sellpips * counter.pipsize;
     high = high.toFixed(counter.decimals);
     high = parseFloat(high);
-    if (!isNaN(high)) {
+    if (!isNaN(counterQuote.high)) {
       counterQuoteData['lastHigh'] = counterQuote.high;
+    }
+    if (!isNaN(high)) {
       counterQuoteData['high'] = high;
     }
 
@@ -59,8 +61,10 @@ var onQuoteOrCounterChange = function(counter, quote) {
     var low = parseFloat(quote.low) + counter.sellpips * counter.pipsize;
     low = low.toFixed(counter.decimals);
     low = parseFloat(low);
-    if (!isNaN(low)) {
+    if (!isNaN(counterQuote.low)) {
       counterQuoteData['lastLow'] = counterQuote.low;
+    }
+    if (!isNaN(low)) {
       counterQuoteData['low'] = low;
     }
 
