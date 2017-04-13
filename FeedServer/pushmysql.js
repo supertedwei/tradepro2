@@ -228,7 +228,7 @@ var syncCounterSetValue = function(counter) {
     // check cache
     var jsonCounterSetValues = counterSetValueCache[counter.exchangeid];
     if (jsonCounterSetValues != null) {
-      setCountersetRef(jsonCounterSetValues);
+      setCountersetRef(counter, jsonCounterSetValues);
       resolve();
       return;
     }
@@ -237,17 +237,10 @@ var syncCounterSetValue = function(counter) {
         .fetchAll({columns: ['countersetid', 'exchangeid', 'lotsize']})
     .then(function(dbCounterSetValues) {
       var jsonCounterSetValues = dbCounterSetValues.toJSON();
+      console.log("fetch CounterSetValue : " + counter.exchangeid);
       // put to cache
-      counterSetValueCache[counterSetValue.exchangeid] = jsonCounterSetValues;
-      for (var counterSetValue of jsonCounterSetValues) {
-        console.log("countersetid    : " + counterSetValue.countersetid);
-        var bundle = Object.assign(counter, counterSetValue);
-        var ref = countersetRef.child(counterSetValue.countersetid);
-        ref.set(bundle)
-          .catch(function(error) {
-            console.error("ref.set fail (234): " + error);
-          })
-      }
+      counterSetValueCache[counter.exchangeid] = jsonCounterSetValues;
+      setCountersetRef(counter, jsonCounterSetValues);
       resolve();
     })
     .catch((error) => {
@@ -257,7 +250,7 @@ var syncCounterSetValue = function(counter) {
   }); 
 }
 
-var setCountersetRef = function(jsonCounterSetValues) {
+var setCountersetRef = function(counter, jsonCounterSetValues) {
     if (jsonCounterSetValues == null) {
       console.warn("setCountersetRef (253)");
       return;
